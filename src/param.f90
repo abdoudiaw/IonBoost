@@ -56,17 +56,17 @@ contains
         if((.not.lfini).and.(nb_cons.or.En_cons))then
               nb_cons=.false.
               En_cons=.false.
-              print*,    'lfini=.false. therefore En_cons=.false. and nb_cons=.false.'
+              write(*,*)    'lfini=.false. therefore En_cons=.false. and nb_cons=.false.'
         endif
             
         if((.not.nb_cons).and.En_cons) then
           nb_cons=.true.
-          print*,    'En_cons=.true.  therefore  nb_cons=.true.'
+          write(*,*)    'En_cons=.true.  therefore  nb_cons=.true.'
         endif
 
         if(nb_cons.and.(n0cold.lt.1.d-04))then
           nb_cons=.false.
-          print*,    'n0cold.lt.1.d-04  therefore  nb_cons=.false.'
+          write(*,*)  'n0cold.lt.1.d-04  therefore  nb_cons=.false.'
         endif
         
 
@@ -74,7 +74,7 @@ contains
        ntotal=ncell+nvacuum
        
        if(ntotal.gt.nmax)then
-         print*, 'ntotal=ncell+nvacuum is bigger than nmax'
+         write(*,*) 'ntotal=ncell+nvacuum is bigger than nmax'
          stop
        endif
 
