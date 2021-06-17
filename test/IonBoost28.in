@@ -1,31 +1,12 @@
-2450 ncell
-400  nvacuum
-0.996d0    prog
-10000  itmax
-50.d0  tmax
-20  iter0
-10   iter1
-5   iter2
-5   iter3
-0.2   dti
-0.0    n0cold
-1.0     n0hot
-1.0       Thmax
-0.01     Tcmax
-.false.   lfini
-20.0     lmax
-.true.    nb_cons
-.true.    En_cons
-1.0      T_MeV
-4.88      LSS
-20.0     nLSS
-'step'   profil
-.true. VTT
-1.0d0 Ztest
-.false. multicouche
--2.00d0 lay1
--0.3d0 lay2
-0.011d0 mix
-1.d0 charge2
-.false. multiphase
-10.4d0 trise
+2450 400 0.996d0 !ncell nvacuum prog
+10000 50.d0 ! itmax  tmax
+20 10 5 5 ! iter0 iter1 iter2 iter3
+0.2   !dti
+0.0  1.0 !   n0cold n0hot
+1.0  0.01 !     Thmax  Tcmax
+.false. 20.0 !  lfini lmax
+.true.  .true. !  nb_consEn_cons
+1.0   4.88 20.0 !   T_MeV LSS nLSS
+'step' .true. !  profil VTT
+1.0d0 .false.  -2.00d0  -0.3d0  !Ztest multicouche lay1 lay2
+0.011d0  1.d0 .false. 10.4d0 !mix charge2  multiphase trise

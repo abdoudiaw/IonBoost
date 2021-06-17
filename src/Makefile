@@ -1,8 +1,7 @@
 FC = gfortran
 FCFLAGS = -O3
 
-OBJS = mod_share.o mod_math.o mod_io.o
-
+OBJS = mod_share.o mod_math.o param.o
 
 .PHONY: all clean
 .SUFFIXES: .f90 .o

@@ -14,40 +14,35 @@ contains
     subroutine read_check_init_conditions(filename)
         ! Read the initial conditions from a data file
         character(len=*), intent(in) :: filename
-        integer :: fileunit
-        open(newunit=fileunit, file=filename)
+     !   integer :: fileunit
+      !  open(newunit=fileunit, file=filename)
+        integer :: iunit,ierr
 
-        read(fileunit,fmt=*)   ncell
-        read(fileunit,fmt=*)   nvacuum
-        read(fileunit,fmt=*)   prog
-        read(fileunit,fmt=*)   itmax
-        read(fileunit,fmt=*)   tmax
-        read(fileunit,fmt=*)   iter0
-        read(fileunit,fmt=*)   iter1
-        read(fileunit,fmt=*)   iter2
-        read(fileunit,fmt=*)   iter3
-        read(fileunit,fmt=*)   dti
-        read(fileunit,fmt=*)   n0cold
-        read(fileunit,fmt=*)   n0hot
-        read(fileunit,fmt=*)   Thmax
-        read(fileunit,fmt=*)   Tcmax
-        read(fileunit,fmt=*)   lfini
-        read(fileunit,fmt=*)   lmax
-        read(fileunit,fmt=*)   nb_cons
-        read(fileunit,fmt=*)   En_cons
-        read(fileunit,fmt=*)   T_MeV
-        read(fileunit,fmt=*)   LSS
-        read(fileunit,fmt=*)   nLSS
-        read(fileunit,fmt=*)   profil
-        read(fileunit,fmt=*)   VTT
-     read(fileunit,fmt=*)   Ztest
-     read(fileunit,fmt=*)   multicouche
-     read(fileunit,fmt=*)   lay1
-     read(fileunit,fmt=*)   lay2
-     read(fileunit,fmt=*)   mix
-     read(fileunit,fmt=*)   charge2
-     read(fileunit,fmt=*)   multiphase
-     read(fileunit,fmt=*)   trise
+!        open(newunit=iunit, file=filename)
+        open(newunit=iunit,file='IonBoost28.in',status='old',action='read',iostat=ierr)
+        if( ierr == 0 ) then
+            read(iunit,*)   ncell,nvacuum,prog
+            read(iunit,*)   itmax,tmax
+            read(iunit,*)   iter0,iter1,iter2,iter3
+            read(iunit,*)   dti
+            read(iunit,*)   n0cold,n0hot
+            read(iunit,*)   Thmax,Tcmax
+            read(iunit,*)   lfini,lmax
+            read(iunit,*)   nb_cons,En_cons
+            read(iunit,*)   T_MeV,LSS,nLSS
+            read(iunit,*)   profil,VTT
+            read(iunit,*)   Ztest,multicouche,lay1,lay2
+            read(iunit,*)   mix,charge2,multiphase,trise
+        else
+            write(*,*) '*** Error reading the input file *** '
+            write(*,*) 'Aborting...'
+            error stop
+        endif  
+
+
+        close(iunit)
+
+
 
         close(fileunit)
 
