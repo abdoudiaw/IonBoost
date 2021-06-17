@@ -10,7 +10,7 @@ program Ionboost
 
 !*         1 - Set initial conditions and determine plasma size
 
-    call read_input() !('IonBoost28.in')
+    call read_input() 
 
 !!!! Put this in separate module file so we can change the initial potential
 !!!!!!!

@@ -1,5 +1,6 @@
 FC = gfortran
-FCFLAGS = -O3
+FCFLAGS = -O3 
+
 
 OBJS = mod_share.o mod_math.o param.o
 
