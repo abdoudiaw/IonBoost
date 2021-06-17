@@ -1,12 +1,12 @@
-2450 400 0.996d0 !ncell nvacuum prog
-10000 100.d0 ! itmax  tmax
-20 10 5 5 ! iter0 iter1 iter2 iter3
-0.2   !dti
-0.0  1.0 !   n0cold n0hot
-1.0  0.01 !     Thmax  Tcmax
-.false. 20.0 !  lfini lmax
-.true.  .true. !  nb_consEn_cons
-1.0   4.88 20.0 !   T_MeV LSS nLSS
-'step' .true. !  profil VTT
-1.0d0 .false.  -2.00d0  -0.3d0  !Ztest multicouche lay1 lay2
-0.011d0  1.d0 .false. 10.4d0 !mix charge2  multiphase trise
+2450 400 0.996   ! ncell nvacuum prog
+10000 200.       ! itmax  tmax
+20 10 5 5        ! iter0 iter1 iter2 iter3
+0.2              ! dti
+0.0  1.0         ! n0cold n0hot
+1.0  0.01        ! Thmax  Tcmax
+F    20.0        ! lfini lmax
+T  T             ! nb_consEn_cons
+1.0   4.88 20.0  ! T_MeV LSS nLSS
+'step' T         ! profil VTT
+1. F -2. -0.3    ! Ztest multicouche lay1 lay2
+0.011  1. F 10.4 ! mix charge2  multiphase trise
