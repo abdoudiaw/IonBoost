@@ -2,7 +2,7 @@ program Ionboost
      use iso_fortran_env, only: int32, real32, int64, real64
      use mod_share
      use mod_math, only: Thot_, Tcold_, gauss
-     use mod_io, only: read_check_init_conditions
+     use mod_io, only: read_input
      
      implicit none
         
@@ -10,7 +10,7 @@ program Ionboost
 
 !*         1 - Set initial conditions and determine plasma size
 
-    call read_check_init_conditions('IonBoost28.in')
+    call read_input() !('IonBoost28.in')
 
 !!!! Put this in separate module file so we can change the initial potential
 !!!!!!!

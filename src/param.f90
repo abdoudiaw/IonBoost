@@ -12,7 +12,7 @@ contains
 
     subroutine read_input()
         ! Read the initial conditions from a data file
-        character(len=*), intent(in) :: filename
+        !character(len=*), intent(in) :: filename
         integer :: iunit,ierr
         open(newunit=iunit,file='IonBoost28.in',status='old',action='read',iostat=ierr)
         if( ierr == 0 ) then
