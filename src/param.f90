@@ -1,24 +1,19 @@
 module mod_io
+use iso_fortran_env, only: int32, real32, int64, real64
+use mod_math, only: Thot_, Tcold_
+use mod_share
 
-    use iso_fortran_env, only: int32, real32, int64, real64
-    use mod_math, only: Thot_, Tcold_
-    use mod_share
-    
-    implicit none
+implicit none
 
-    private
-    public :: read_check_init_conditions
+private
+public :: read_input
 
 contains
 
-    subroutine read_check_init_conditions(filename)
+    subroutine read_input()
         ! Read the initial conditions from a data file
         character(len=*), intent(in) :: filename
-     !   integer :: fileunit
-      !  open(newunit=fileunit, file=filename)
         integer :: iunit,ierr
-
-!        open(newunit=iunit, file=filename)
         open(newunit=iunit,file='IonBoost28.in',status='old',action='read',iostat=ierr)
         if( ierr == 0 ) then
             read(iunit,*)   ncell,nvacuum,prog
@@ -39,13 +34,7 @@ contains
             error stop
         endif  
 
-
         close(iunit)
-
-
-
-        close(fileunit)
-
     !    Check whether everything is fine in the file
 
         if(profil.ne.'sack'.and.profil.ne.'step'.and.profil.ne.'expo'.and.profil.ne.'gaus') then
@@ -69,15 +58,12 @@ contains
           write(*,*)  'n0cold.lt.1.d-04  therefore  nb_cons=.false.'
         endif
         
-
-
        ntotal=ncell+nvacuum
        
        if(ntotal.gt.nmax)then
          write(*,*) 'ntotal=ncell+nvacuum is bigger than nmax'
          stop
        endif
-
 
         nstep=(tmax/dti+0.5d0)
         nsort=1
@@ -89,7 +75,6 @@ contains
 
     !   Determine the length of the plasma
 
-
       if(.not.lfini) then
          time=0.d0
          dt=dti
@@ -97,18 +82,18 @@ contains
          Tc=Tcmax
          cs2=(n0cold+n0hot)/(n0cold/Tc+n0hot/Th)
          cs=sqrt(cs2)
+
          if(profil.eq.'sack')length=10.d0*LSS+25.d0*cs
          if(profil.eq.'expo')length=LSS+25.d0*cs
          if(profil.eq.'step')length=25.d0*cs
-         
+
          if(itmax.eq.1) goto 91
-    
-        Th=Thmax*Thot_(multiphase,trise,0.d0)
-        Tc=Tcmax*Tcold_(0.d0)
+
+         Th=Thmax*Thot_(multiphase,trise,0.d0)
+         Tc=Tcmax*Tcold_(0.d0)
 
 
         do 90 itime=1,itmax
-
            if(time.ge.(tmax-1.d-5)) goto 91
            if(itime.eq.itmax) goto 91
            if((time+dt).gt.(tmax-1.d-5)) dt=tmax-time
@@ -126,11 +111,9 @@ contains
     91      continue
         endif
 
-
          if(lfini) length=lmax
 
-
-    !       maillage spatial
+    !   mesh 
 
         PI=4.D0*DATAN(1.D0)
         rgauss=2.d0*length/sqrt(PI)
@@ -143,7 +126,6 @@ contains
         endif
           x0(0)=-length
           x0(1)=x0(0)+dx0(1)
-
 
         do i = 0,1
            niSS(i)=ni0
@@ -181,25 +163,6 @@ contains
            idebut(i)=i
            irang(i)=i
         end do
-
-    end subroutine read_check_init_conditions
-
-!
-!    subroutine output_files()
-!      implicit none
-!      open(unit=9,file='conservation',status='unknown')
-!      open(unit=10,file='historique',status='unknown')
-!      open(unit=14,file='histobis',status='unknown')
-!
-!      write(9,*) '# time nti nthot ntcold nte n0hot n0cold &
-!                    En_ion Whot1 Whot2 Whot Wcold &
-!                    Th Tc En_elec En_delta vmax vfinal'
-!      write(10,*) '# time xi v(ivmax) Energy_max E(ivmax) ne(ivmax) &
-!                  ni(ivmax) ni(0) nhot(0) ncold(0) lDebye lgrade &
-!                  lgradi ivmax idebut(ivmax)'
-!
-!      write(14,*) '# time t/R0 xi R/R0 Eq42
-!
-!    end subroutine output_files
-
+    end subroutine read_input
+    
 end module mod_io
