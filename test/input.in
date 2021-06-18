@@ -1,5 +1,5 @@
 2450 400 0.996   ! ncell nvacuum prog
-10000 200.       ! itmax  tmax
+10000 50.       ! itmax  tmax
 20 10 5 5        ! iter0 iter1 iter2 iter3
 0.2              ! dti
 0.0  1.0         ! n0cold n0hot
