@@ -1,9 +1,10 @@
 FC = gfortran
-FCFLAGS = -O3 
-
-
-OBJS = mod_share.o mod_math.o param.o
-
+# flags
+DBG := -O0 -g -fbacktrace -Wall -Wextra #-pedantic -fcheck=all -finit-real=snan -ffpe-trap=invalid -std=f2018
+FFLAGS := $(DBG)
+#
+OBJS = types.o mod_share.o mod_math.o param.o
+#
 .PHONY: all clean
 .SUFFIXES: .f90 .o
 
