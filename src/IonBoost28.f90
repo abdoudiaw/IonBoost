@@ -3,19 +3,13 @@ program Ionboost
      use mod_share
      use mod_math, only: Thot_, Tcold_, gauss
      use mod_io, only: read_input
-     
      implicit none
         
-
-
-!*         1 - Set initial conditions and determine plasma size
+!   1 - Set initial conditions and determine plasma size
 
     call read_input() 
 
-!!!! Put this in separate module file so we can change the initial potential
-!!!!!!!
-
-!*  1.3 conditions initiales et estimation du potentiel phi initial
+!  1.3 conditions initiales et estimation du potentiel phi initial
     
     Tnorm=T_MeV/.511d0
     e0=0.5*Tnorm*(1.+9.*Tnorm/4.+3.*Tnorm*Tnorm/4.)/&
@@ -25,21 +19,19 @@ program Ionboost
     else
          Tn0=2.*e0
     endif
-
-
+!
     Th=Thmax*Thot_(multiphase,trise,0.d0)
     Tc=Tcmax*Tcold_(0.d0)
       if(Th.eq.0.d0)then
-         write(*,*) 'la temperature chaude ne doit pas s''annuler'
+         write(*,*) 'Hot temperature should not be zero.'
+         write(*,*) 'Aborting...'
          stop
       endif
-
-
+!
     phi(ncell)=(n0cold*Tc+n0hot*Th)/(n0cold+n0hot)
     E(ncell)=sqrt(2.*(n0cold*Tc*exp(-phi(ncell)/Tc)+n0hot*Th*exp(-phi(ncell)/Th)))
     alpha=E(ncell)/phi(ncell)
-
-
+!
     do i = 0,ncell
        xt(i)=x0(i)
        v(i)=0.d0
@@ -63,21 +55,19 @@ program Ionboost
              endif
           endif
     end do
-
+!
     do i = 0,ncell
        x0test(i)=x0(i)
        xttest(i)=x0(i)
        vtest(i)=0.d0
        itest(i)=i
     end do
-
+!
     do i =ncell+1,ntotal
        v(i)=0.
        ni(i)=1.d-12
     enddo
-
-
-
+!
     E(0)=0.d0
     Etest(0)=0.d0
     gradnh(0)=0.d0
@@ -95,38 +85,31 @@ program Ionboost
     Whot2=0.d0
     Wcold=0.d0
     idico=0
-
-
+!
   open(unit=9,file='conservation.txt',status='unknown')
   open(unit=10,file='historique.txt',status='unknown')
   open(unit=14,file='histobis.txt',status='unknown')
-
   write(9,*) '# time nti nthot ntcold nte n0hot n0cold &
                 En_ion Whot1 Whot2 Whot Wcold &
                 Th Tc En_elec En_delta vmax vfinal'
   write(10,*) '# time xi v(ivmax) Energy_max E(ivmax) ne(ivmax) &
                  ni(ivmax) ni(0) nhot(0) ncold(0) lDebye lgrade &
                  lgradi ivmax idebut(ivmax)'
-
   write(14,*) '# time t/R0 xi R/R0 Eq42'
+!
 
-!!!!!!!!!!!
-!!!!!!!!!!!
-
-!*               2 - boucle temporelle
+!  2 - time loop 
     do 100 itime=1,itmax
-
         if(itime.le.3) then
            iter=iter0
         else
            iter=iter1
         endif
 
-!*         2.1 determination ou estimation des temperatures et de n0hot
-!*             et calcul de la nouvelle densite ionique
-!*    2.1.1 - determination des temperatures dans le cas ou leur
-!*             dependance est fixee par les fonctions Thot et Tcold
+! 2.1- determination of temperatures and hot electrons density and new ionic density
 
+! 2.1.1 - estimatation of temperatures in case where their dependence is fixed by the functions fonctions Thot and Tcold
+!
         Thold=Th
         Tcoold=Tc
         if(.not.En_cons)then
@@ -144,20 +127,18 @@ program Ionboost
                   iter=iter0
                endif
         endif
-
-            
+!         
 !    2.1.2 - Estimation of the change in n0hot due to conservation of hot electrons number
-
+!
         if(nb_cons)then
            nhm3=nhm2
            nhm2=nhm1
            nhm1=n0hot
            n0hot=3.d0*nhm1-3.d0*nhm2+nhm3
         endif
-
+!
 !    2.1.3 - Estimation of the change of Th and Tc due to energy conservation
-
-
+!
         if(En_cons)then
            Thm3=Thm2
            Thm2=Thm1
@@ -168,18 +149,16 @@ program Ionboost
            Tcm1=Tc
            Tc=3.d0*Tcm1-3.d0*Tcm2+Tcm3
         endif
-        
-!    *****************************
+!        
         if(itime.eq.(itime/nsort)*nsort) then
            print *, time
         endif
-
-
+!
 !    *    2.1.4 - mise en memoire des anciennes valeurs de la densite
 !    *             electronique, du potentiel, du champ electrique,
 !    *             des gradients de densite electronique,
 !    *             et de la position dans la gaine vide d'ions
-
+!
          if(itime.gt.1) then
             do i=0,ntotal
                nhotold(i)=nhot(i)
@@ -202,40 +181,34 @@ program Ionboost
             Whot2old=Whot2
             Wcoldold=Wcold
          endif
-
-
-!*     2.1.5 calcul de la nouvelle densite ionique
-    
+!
+!*     2.1.5 calcul of new ionic density 
+!
         do i = 1,ncell
            dxt(i)=xt(i)-xt(i-1)
         end do
-        
+!        
         ni(0)=qiSS(0)/dxt(1)
-    
         do i = 1,ncell-1
            ni(i)=2.d0*qiSS(i)/(dxt(i)+dxt(i+1))
         end do
-        
+!        
         ni(ncell)=2.d0*qiSS(ncell)/dxt(ncell)&
             /(1.d0+2.d0*dxt(ncell)/dxt(ncell-1)-dxt(ncell-1)/dxt(ncell-2))
-
+!
         do i = 1,ncell
            ni1s2(i)=(ni(i-1)+ni(i))/2.d0
         end do
 
-
-
-!    2.2 - iteration pour le calcul de phi, Th, Tc
-
+!    2.2 - iteration for the estimation of phi, Th, Tc
         do 10 iphi=1,iter
 !    2.2.1 - construction des tableaux a,b,c, et f
-
             neh=n0hot*exp(-phi(0)/Th)
             nec=n0cold*exp(-phi(0)/Tc)
             b(0)=-2.d0/dxt(1)**2-neh/Th-nec/Tc
             c(0)=2.d0/dxt(1)**2
             f(0)=ni(0)-neh*(1.d0+phi(0)/Th)-nec*(1.d0+phi(0)/Tc)
-            
+!            
             do i=1,ncell-1
                neh=n0hot*exp(-phi(i)/Th)
                nec=n0cold*exp(-phi(i)/Tc)
@@ -252,16 +225,13 @@ program Ionboost
             b(ncell)=-a(ncell)-sqrt(2.d0/peold)*neold/dxt(ncell) -neh/Th-nec/Tc
             f(ncell)=ni(ncell)-neh*(1.d0+phi(ncell)/Th)-nec*(1.d0+phi(ncell)/Tc)&
                         -sqrt(8.d0*peold)/dxt(ncell) *(1.d0+0.5d0*neold*phi(ncell)/peold)
-
-    !*    2.2.2 - inversion de la matrice tridiagonale
-
+    !                    
+    !*    2.2.2 - inversion of the tridiagonal matrix
             call gauss(nmax,ncell,a,b,c,f,bx,fx,phi)
-
             if(iphi.ne.iter.and.itime.eq.1) goto 10
             if(iphi.ne.iter.and.(((.not.nb_cons).and.(.not.En_cons)))) goto 10
-
-
-    !*     2.2.3 - calcul de la densite electronique dans le plasma
+    !
+    !*     2.2.3 - determination the electronic density
     !
         do i=0,ncell
            nhot(i)=n0hot*exp(-phi(i)/Th)
@@ -270,22 +240,18 @@ program Ionboost
            rho(i)=ni(i)-ne(i)
         enddo
 
-    !    *    2.2.4 - calcul de la pression electronique
-    !    *          et des gradients de densite
-    !    *          electronique et ionique au bord
+    !    *    2.2.4 - determination of the electronic pressure and densities gradients 
     !
             phot(ncell)=nhot(ncell)*Th
             pcold(ncell)=ncold(ncell)*Tc
             pe(ncell)=phot(ncell)+pcold(ncell)
             grade=(log(ne(ncell))-log(ne(ncell-1)))/(xt(ncell)-xt(ncell-1))
             gradi=(log(ni(ncell))-log(ni(ncell-1)))/(xt(ncell)-xt(ncell-1))
-
-
-    !    *     2.2.5 calcul de la densite electronique dans la gaine vide d'ions
-
+    !
+    !    *     2.2.5 determination of the electronic density in the vacuum sheath (empty of ions)
          kvide=sqrt(n0hot/2.d0/Th)
          uphi=0.d0
-         
+         !
          do i=ncell+1,ntotal
             if(i.eq.(ncell+1))then
                dxt(ncell+1)=0.
@@ -305,14 +271,14 @@ program Ionboost
             pe(i)=phot(i)+pcold(i)
             E(i)=sqrt(2.d0*pe(i))
          enddo
-
-    !*     2.2.6 calcul du nombre total d'electrons et d'ions
-
+!
+    !*     2.2.6 determine the total number of electrons and ions.
+!
         nti=0.d0
         do i=1,ncell
            nti=nti+ni1s2(i)*dxt(i)
         enddo
-
+!
         nthot=0.d0
         ntcold=0.d0
         do i=1,ntotal
@@ -321,13 +287,10 @@ program Ionboost
         enddo
         nthot=nthot+E(ntotal)
         nte=nthot+ntcold
-
+!
         if(itime.eq.1) En_hot0=nthot*(e0/Tn0)*Th
         if(multiphase.and.time.le.trise) En_hot0=nthot*(e0/Tn0)*Th
-
         En_cold=ntcold*0.5d0*Tc
-
-
 
     !*     2.2.7 ajustement de n0hot pour conserver le nombre
     !*           total d'electrons chauds (alors le nombre d'electrons
