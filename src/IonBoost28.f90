@@ -776,12 +776,23 @@ close(14)
             nhot(i),char(9),ncold(i),char(9),nss(i)
     enddo
 
-      close(11)
+    close(11)
+    open(11,file='profil_test',status='unknown')
+
+    write(11,*) '# x0test xttest vtest itest E'
+    do i=0,ncell,iline
+    write(11,'(f11.4,a,f12.4,a,f7.4,a,i4,a,f9.6)') &
+       x0test(i),char(9),xttest(i),char(9),vtest(i),char(9),&
+       itest(i),char(9),Etest(i)
+    enddo
+
+    close(11)
+
 
 !*        4.2 spectres en vitesse et en energie
 
     open(12,file='spectres.txt', status='unknown')
-    write(12,*)'vmoy Emoy dndv dndE'
+    write(12,*) '# vmoy Emoy dndv dndE'
 
     do i=1,ncell
        vmoy(i)=0.5*(v(i-1)+v(i))
@@ -795,7 +806,7 @@ close(14)
 
     do i=1,ncell,iline
        if(dndE(i).lt.1.d03) then
-          write(12,'(f7.4,f8.4,f10.6,f10.6)') vmoy(i), Emoy(i), dndv(i), dndE(i)
+          write(12,'(f7.4,a,f8.4,a,f10.6,a,f10.6)') vmoy(i),char(9),Emoy(i),char(9),dndv(i),char(9),dndE(i)
        endif
     enddo
   
