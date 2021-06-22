@@ -1,6 +1,6 @@
 module mod_io
 use mod_types
-use mod_math, only: Thot_, Tcold_
+use mod_solver, only: Thot_, Tcold_
 use mod_share
 implicit none
 private

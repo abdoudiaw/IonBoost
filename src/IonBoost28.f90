@@ -1,7 +1,7 @@
 program Ionboost
      use iso_fortran_env, only: int32, real32, int64, real64
      use mod_share
-     use mod_math, only: Thot_, Tcold_, gauss
+     use mod_solver, only: Thot_, Tcold_, gauss
      use mod_io, only: read_input
      implicit none
         
