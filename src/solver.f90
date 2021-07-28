@@ -2,31 +2,8 @@ module mod_solver
     use mod_types
     implicit none
     private
-    public :: Thot_, Tcold_, gauss
+    public :: gauss
     contains
-        pure function Thot_(multiphase,trise,time) result(res)
-        real(dp), intent (in):: time
-        real(dp), intent (in):: trise
-        real(dp) :: res
-        logical, intent(in) :: multiphase
-        !
-        if(multiphase.and.time.le.trise) then
-         res=0.01_dp+0.99_dp*time/trise
-        else
-        res=1._dp
-        endif
-        end function Thot_
-      !
-       pure function Tcold_(time) result(res)
-        real(dp), intent (in):: time
-        real(dp) :: res
-        if(time.le.9.9_dp) then
-          res=1._dp
-        else
-          res=1._dp
-        endif
-       end function Tcold_
-      !
       pure subroutine gauss(nmax,ncell,A,B,C,F,bx,fx,phi)
         ! determine the electrostatic potential
         !

@@ -1,32 +1,23 @@
 program Ionboost
      use iso_fortran_env, only: int32, real32, int64, real64
      use mod_share
-     use mod_solver, only: Thot_, Tcold_, gauss
+     use mod_solver, only:  gauss
      use mod_io, only: read_input
      implicit none
-        
 !   1 - Set initial conditions and determine plasma size
-
-    call read_input() 
-
+    call read_input()
 !  1.3 conditions initiales et estimation du potentiel phi initial
-    
     Tnorm=T_MeV/.511d0
     e0=0.5*Tnorm*(1.+9.*Tnorm/4.+3.*Tnorm*Tnorm/4.)/&
     (1.+3.*Tnorm/2.+3.*Tnorm*Tnorm/8.)
-    if(EOS) then
-         Tn0=2.*e0*(1.+9.*e0/2.+3.*e0*e0/2.)/(1.+6.*e0+3.*e0*e0)
-    else
-         Tn0=2.*e0
+    Tn0=2.*e0
+    Th=Thmax
+    Tc=Tcmax
+    if(Th.eq.0.d0)then
+     write(*,*) 'Hot temperature should not be zero.'
+     write(*,*) 'Aborting...'
+     stop
     endif
-!
-    Th=Thmax*Thot_(multiphase,trise,0.d0)
-    Tc=Tcmax*Tcold_(0.d0)
-      if(Th.eq.0.d0)then
-         write(*,*) 'Hot temperature should not be zero.'
-         write(*,*) 'Aborting...'
-         stop
-      endif
 !
     phi(ncell)=(n0cold*Tc+n0hot*Th)/(n0cold+n0hot)
     E(ncell)=sqrt(2.*(n0cold*Tc*exp(-phi(ncell)/Tc)+n0hot*Th*exp(-phi(ncell)/Th)))
@@ -37,47 +28,21 @@ program Ionboost
        v(i)=0.d0
        phi(i)=phi(ncell)*exp(alpha*(x0(i)-x0(ncell)))
        charge(i)=1.d0
-          if(multicouche)then
-             if(x0(i).gt.lay1.and.x0(i).lt.lay2) then
-                if((i/2)*2.eq.i) then
-                   qiSS(i)=qiSS(i)*2.d0*(1.d0-mix)
-                else
-                   charge(i)=charge2
-                   qiSS(i)=qiSS(i)*2.d0*mix
-                endif
-             else
-                if((i/2)*2.eq.i) then
-                   qiSS(i)=qiSS(i)*(2.d0-1.d-8)
-                else
-                   charge(i)=charge2
-                   qiSS(i)=qiSS(i)*1.d-8
-                endif
-             endif
-          endif
     end do
-!
-    do i = 0,ncell
-       x0test(i)=x0(i)
-       xttest(i)=x0(i)
-       vtest(i)=0.d0
-       itest(i)=i
-    end do
-!
+
     do i =ncell+1,ntotal
        v(i)=0.
        ni(i)=1.d-12
     enddo
 !
     E(0)=0.d0
-    Etest(0)=0.d0
     gradnh(0)=0.d0
     gradnc(0)=0.d0
     time=0.d0
     dt=dti
-        if(multiphase.and.dt.gt.trise/100.d0)dt=trise/100.d0
     nhm2=n0hot
     nhm1=n0hot
-    Thm2=Thmax*Thot_(multiphase,trise,trise)
+    Thm2=Thmax
     Thm1=Thm2
     Tcm2=Tc
     Tcm1=Tc
@@ -113,8 +78,8 @@ program Ionboost
         Thold=Th
         Tcoold=Tc
         if(.not.En_cons)then
-               Th=Thmax*Thot_(multiphase,trise,time)
-               Tc=Tcmax*Tcold_(time)
+               Th=Thmax
+               Tc=Tcmax
                idico=0
                if(Th.eq.0.d0)then
                     write(*,*) 'Hot electron temperature should be not be zero!'
@@ -167,9 +132,6 @@ program Ionboost
                Eold(i)=E(i)
                ghold(i)=gradnh(i)
                gcold(i)=gradnc(i)
-            enddo
-            do i=0,ncell
-              Etestold(i)=Etest(i)
             enddo
             do i=ncell+1,ntotal
                xtold(i)=xt(i)
@@ -289,7 +251,6 @@ program Ionboost
         nte=nthot+ntcold
 !
         if(itime.eq.1) En_hot0=nthot*(e0/Tn0)*Th
-        if(multiphase.and.time.le.trise) En_hot0=nthot*(e0/Tn0)*Th
         En_cold=ntcold*0.5d0*Tc
 
     !*     2.2.7 ajustement de n0hot pour conserver le nombre
@@ -373,7 +334,7 @@ program Ionboost
     !    *     2.2.10 calcul de l'energie fournie par les electrons froids et
     !    *           reajustement de Tc
     !
-        if(itime.gt.1.and.iphi.gt.1.and.(.not.multiphase.or.time.gt.trise)) then
+        if(itime.gt.1.and.iphi.gt.1) then
                Wcold=Wcoldold+0.125d0*(phiold(0)+phi(0))&
                     *(ncold(0)-ncoldold(0)-vint(0)*dt&
                     *0.5d0*(gradnc(0)+gcold(0)))*(dxtold(1)+dxt(1))
@@ -395,141 +356,68 @@ program Ionboost
                   endif
                endif
         endif
-
-
-
     !        *     2.2.11 calcul du champ electrique dans toute la detente
-
             do i = 1,ncell
                E1s2(i)=(phi(i)-phi(i-1))/dxt(i)
             end do
-                
             do i = 1,ncell-1
                E(i)=(dxt(i+1)*E1s2(i)+dxt(i)*E1s2(i+1))/(dxt(i)+dxt(i+1))
             end do
-                
              E(ncell)=sqrt(2.d0*pe(ncell))
-
-
-        do i = 1,ncell
-           if(xttest(i).ge.xt(itest(i)))then
-             do j=itest(i),ntotal-1
-               if(xttest(i).le.xt(j+1))then
-                 itest(i)=j
-                 goto 301
-               endif
-             enddo
-             itest(i)=ntotal-1
-    301      continue
-           else
-             do j=itest(i)-1,0,-1
-               if(xttest(i).ge.xt(j))then
-                 itest(i)=j
-                 goto 302
-               endif
-             enddo
-             itest(i)=0
-    302      continue
-             endif
-
-       if(itest(i).ne.ncell) then
-         Etest(i)=(E(itest(i))*(xt(itest(i)+1)-xttest(i))&
-                +E(itest(i)+1)*(xttest(i)-xt(itest(i))))/dxt(itest(i)+1)
-         else
-         Etest(i)=E(ncell)
-       endif
-    end do
-
-
     !*     2.2.12 ajustement de la vitesse aux temps 'entiers'
-        
         if(itime.gt.1) then
            do i = 1,ncell
               v(i)=vint(i)+dt*(3.d0*E(i)+Eold(i))*charge(i)/8.d0
            end do
         endif
-
-        if(itime.gt.1) then
-           do i = 1,ncell
-              vtest(i)=vtestint(i)+dt*(3.d0*Etest(i)+Etestold(i))*Ztest/8.d0
-           end do
-        endif
-
     !*     2.2.13 calcul de l'energie cinetique des ions
-
         En_ion=0.
         do i = 1,ncell-1
            En_ion=En_ion+qiSS(i)*v(i)**2/2.d0/charge(i)
         end do
         if(profil.eq.'step') En_ion = En_ion+qiSS(ncell)*v(ncell)**2/4.d0/charge(i)
         if(profil.ne.'step') En_ion = En_ion+qiSS(ncell)*v(ncell)**2/2.d0/charge(i)
-
-
     !*     2.2.14 calcul de l'energie electrostatique
-
         En_elec=0.
         do i = 1,ntotal-1
            En_elec=En_elec+0.25d0*(E(i)**2)*(dxt(i)+dxt(i+1))
         end do
         En_elec=En_elec+0.25d0*(E(ntotal)**2)*dxt(ntotal)
         En_elec=En_elec+E(ntotal)*Th
-                
     !*     2.2.15 calcul de l'energie totale
-
-        if(itime.eq.1.or.(multiphase.and.time.le.trise))then
+        if(itime.eq.1)then
            En_totale=En_ion+En_elec+0.5d0*ntcold*Tc+En_hot0
         endif
-
+    !
     !*    2.2.16 reajustement de Th
     !*           (remplace l'ajustement precedent)
-
-      if(En_cons.and.itime.gt.1.and.iphi.gt.1.and.&
-         (.not.multiphase.or.time.gt.trise))then
-
-       enew=(En_totale-En_ion-En_elec-0.5d0*ntcold*Tc)&
-              *Tn0/nthot/Thmax
-         if(EOS) then
-         Thnew=2.*Thmax*enew*(1.+9.*enew/2.+3.*enew*enew/2.)&
-                /(1.+6.*enew+3.*enew*enew)/Tn0
-         else
+    !
+      if(En_cons.and.itime.gt.1.and.iphi.gt.1) then
+         enew=(En_totale-En_ion-En_elec-0.5d0*ntcold*Tc)*Tn0/nthot/Thmax
          Thnew=2.*Thmax*enew/Tn0
-         endif
-         if(iphi.ne.iter)then
-         Th=(iter2*Th+Thnew)/(iter2+1)
+    !
+         if(iphi.ne.iter) then
+            Th=(iter2*Th+Thnew)/(iter2+1)
          else
-         Th=(iter3*Th+Thnew)/(iter3+1)
+            Th=(iter3*Th+Thnew)/(iter3+1)
          endif
     endif
-    
-10    continue
-
-
-
-
-!*         2.3 Theoretical electrostatic fields'
-!
+10  continue
+!*    2.3 Theoretical electrostatic fields
 !*    2.3.1 Normalized fields with the self-similar fields
-
      if(itime.eq.1)then
         Enorm=0.d0
      else
         Ess=sqrt(Th)/time
         Enorm=E(ncell)/Ess
      endif
-
 !*    2.3.2 comparaison au champ 'theorique' suppose 'fite' le
 !*          champ au bord a tout instant
-
      Ebord0=sqrt(2.d0*n0hot)/exp(0.5d0)
      Ebordth=2.d0*Ebord0*sqrt(Th)/sqrt(4.d0+(Ebord0*time)**2)
-
 !*         2.4 Stop test wrt to the number of iterations
-
         if(itmax.eq.1) goto 101
-
-
 !*         2.5 Time dependent functions
-
         vmax=0.d0
         ivmax=ncell
         do i=1,ncell
@@ -539,7 +427,6 @@ program Ionboost
            endif
         enddo
         vfinal=v(ivmax)+E(ivmax)*charge(ivmax)*time
-
         lDebye=sqrt(Th/ne(ncell))
         lgrade=-1./grade
         if(itime.eq.1)then
@@ -547,50 +434,34 @@ program Ionboost
         else
            lgradi=-1./gradi
         endif
-
         nstep=(tmax/dt)
         nsort=1
         if(nstep.gt.2000)nsort=nstep/2000
-
-
         if(itime-1.ne.((itime-1)/nsort)*nsort.and..not.laststep) go to 102
-
         write(9,'(f8.2,17(f10.5))') time,nti,nthot,ntcold,nte,n0hot,n0cold,En_ion,&
             Whot1,Whot2,Whot,Wcold,Th,Tc,En_elec,&
             En_elec+En_ion-Whot,vmax,vfinal
         write(10,'(f8.2,f12.5,f7.4,f8.4,f7.5,2(f10.7),3(f8.6),3(f10.5),i6,i6)') time, &
             xt(ivmax),v(ivmax),0.5d0*v(ivmax)**2,E(ivmax),ne(ivmax),ni(ivmax),&
             ni(0),nhot(0),ncold(0),lDebye,lgrade,lgradi,ivmax,idebut(ivmax)
-
-
         Rs=rgauss/ni(0)
         xi=(xt(ivmax)+lmax)/Rs
         tsR0=time/rgauss
         RsR0=Rs/rgauss
         Eq42=2.d0*xi*exp(xi**2/2.d0)/rgauss/sqrt(RsR0)
-
         write(14,'(f8.2,f7.3,f7.4,f8.3,f8.4,f7.4)') time,tsR0,xi,RsR0,Eq42
-
 102    continue
-
 !*         2.6 test d'arret sur le temps (ici s'arrete normalement
 !*          un calcul standard avec itmax.gt.1 et tmax.gt.0 apres
 !*          un nombre fini d'iterations)
-    
+
 !        if(itime-1.ne.((itime-1)/nsort)*nsort) goto 101
         if(time.ge.(tmax-1.d-5)) goto 101
         if(itime.eq.itmax) goto 101
 
 !*         2.7 incrementation du temps
-            
         dtold=dt
         dt=dti
-        if(VTT.and..not.multicouche.and.&
-              (.not.multiphase.or.time.gt.trise)) dt=dti/sqrt(ni(0))
-        if(VTT.and.multicouche.and.(.not.multiphase.or.time.gt.trise))&
-            dt=dti/sqrt(5.d0*qiSS(0)/(xt(10)-xt(0)))
-        if(multiphase.and.dt.gt.trise/100.d0.and.time.lt.trise) dt=trise/100.d0
-        if(multiphase.and.time.lt.trise.and.(time+dt).gt.trise) dt=trise-time
         if((time+dt).gt.(tmax-1.d-5)) then
            dt=tmax-time
            laststep=.true.
@@ -606,46 +477,26 @@ program Ionboost
            do i = 1,ncell
               vint(i)=v(i)+0.5d0*dt*E(i)*charge(i)
            end do
-        
-           do i = 1,ncell
-              vtestint(i)=vtest(i)+0.5d0*dt*Etest(i)*Ztest
-           end do
-        
         else
-
-        do i = 1,ncell
-           vtestint(i)=vtestint(i)+0.5*(dtold+dt)*Etest(i)*Ztest
-        end do
-
-
 !*            2.8.1 - construction des tableaux a,b,c, et f pour
 !*              le calcul implicite de la vitesse avec viscosite
-
        delt=0.5*(dtold+dt)
        b(0)=1.d0/delt
        c(0)=0.d0
        f(0)=0.d0
-    
        do i=1,ncell-1
           a(i)=-2.d0*nu/dxt(i)/(dxt(i)+dxt(i+1))
           b(i)=1.d0/delt+2.d0*nu/(dxt(i)*dxt(i+1))
           c(i)=-2.d0*nu/dxt(i+1)/(dxt(i)+dxt(i+1))
           f(i)=E(i)*charge(i)+vint(i)/delt
        enddo
-    
        a(ncell)=0.d0
        b(ncell)=1.d0/delt
-         f(ncell)=E(ncell)*charge(ncell)+vint(ncell)/delt
-     
+       f(ncell)=E(ncell)*charge(ncell)+vint(ncell)/delt
 !*          2.8.2 - inversion de la matrice tridiagonale
-
        call gauss(nmax,ncell,a,b,c,f,bx,fx,vint)
-    
     endif
-
-
 !*         2.9 modification of the position
-    
         do i = 1,ncell
            xt(i)=xt(i)+dt*vint(i)
                if(xt(i).lt.x0(0))then
@@ -653,16 +504,7 @@ program Ionboost
                   vint(i)=-vint(i)
                endif
         end do
-        do i = 1,ncell
-           xttest(i)=xttest(i)+dt*vtestint(i)
-               if(xttest(i).lt.x0(0))then
-                  xttest(i)=2.d0*x0(0)-xttest(i)
-                  vtestint(i)=-vtestint(i)
-               endif
-        end do
-
 !*         2.10 rearrangement of ions numbers
-   
    do j=2,ncell
       xxt=xt(j)
       xx0=x0(j)
@@ -714,11 +556,9 @@ program Ionboost
       dxt(i+1)=ddxt
          charge(i+1)=ccharge
    enddo
-   
    do j=1,ncell
       irang(idebut(j))=j
    enddo
-
 100   continue
 101   continue
 
@@ -726,9 +566,7 @@ close(9)
 close(10)
 close(14)
 
-    print *, 'Step 2 succesfully complete!'
-
-
+    print *, 'Step 2 succesfully completed!'
 !*               3 - Estimate self-similar density
     
       if(itime.eq.1)then
@@ -754,10 +592,9 @@ close(14)
     
 201    continue
 
-    print *, 'Step 3 succesfully complete!'
+    print *, 'Step 3 succesfully completed!'
 
-!*        4 - sorties graphiques
-!*        4.1 sorties des profils
+!*        4 - outputs
 
     open(11,file='profil.txt',status='unknown')
     write(11,*) '# x0 xt v phi E ni ne rho nhot ncold nss difnor dWhot SWhot charge'
@@ -777,17 +614,6 @@ close(14)
     enddo
 
     close(11)
-    open(11,file='profil_test',status='unknown')
-
-    write(11,*) '# x0test xttest vtest itest E'
-    do i=0,ncell,iline
-    write(11,'(f11.4,a,f12.4,a,f7.4,a,i4,a,f9.6)') &
-       x0test(i),char(9),xttest(i),char(9),vtest(i),char(9),&
-       itest(i),char(9),Etest(i)
-    enddo
-
-    close(11)
-
 
 !*        4.2 spectres en vitesse et en energie
 
@@ -802,17 +628,12 @@ close(14)
        dndE(i)=(niSS(i-1)+niSS(i))*dx0(i)/(v(i)**2-v(i-1)**2)
        dndE(i)=abs(dndE(i))
     enddo
-
-
     do i=1,ncell,iline
        if(dndE(i).lt.1.d03) then
           write(12,'(f7.4,a,f8.4,a,f10.6,a,f10.6)') vmoy(i),char(9),Emoy(i),char(9),dndv(i),char(9),dndE(i)
        endif
     enddo
-  
   close(12)
-
-
   print *,'time', time
   stop
 
