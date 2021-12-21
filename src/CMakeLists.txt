@@ -1,18 +1,19 @@
-########################################
-# Set up how to compile the source files
-########################################
+# CMake project file for Ionboost
 
-# Add the source files
-SET(IB_src  types.f90
-            share.f90
-            solver.f90
-            param.f90
-            IonBoost28.f90
-)
+cmake_minimum_required(VERSION 3.10)
+
+# set the project name and version
+project(Ionboost VERSION 28.0)
+
+ENABLE_LANGUAGE( Fortran )
 
 
-# Define the executable in terms of the source files
-ADD_EXECUTABLE(${IBEXE} ${IB_src})
+add_executable(lmp types.f90
+                        share.f90
+                        solver.f90
+                        param.f90
+                        IonBoost28.f90)
 
-SET_PROPERTY (TARGET ${IBEXE} PROPERTY LINKER_LANGUAGE Fortran)
-
+target_include_directories(lmp PUBLIC
+                           "${PROJECT_BINARY_DIR}"
+                           )

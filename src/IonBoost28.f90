@@ -53,15 +53,12 @@ program Ionboost
 !
   open(unit=9,file='conservation.txt',status='unknown')
   open(unit=10,file='historique.txt',status='unknown')
-  open(unit=14,file='histobis.txt',status='unknown')
   write(9,*) '# time nti nthot ntcold nte n0hot n0cold &
                 En_ion Whot1 Whot2 Whot Wcold &
                 Th Tc En_elec En_delta vmax vfinal'
   write(10,*) '# time xi v(ivmax) Energy_max E(ivmax) ne(ivmax) &
                  ni(ivmax) ni(0) nhot(0) ncold(0) lDebye lgrade &
-                 lgradi ivmax idebut(ivmax)'
-  write(14,*) '# time t/R0 xi R/R0 Eq42'
-!
+                 lgradi ivmax idebut(ivmax)'!
 
 !  2 - time loop 
     do 100 itime=1,itmax
@@ -70,8 +67,6 @@ program Ionboost
         else
            iter=iter1
         endif
-
-! 2.1- determination of temperatures and hot electrons density and new ionic density
 
 ! 2.1.1 - estimatation of temperatures in case where their dependence is fixed by the functions fonctions Thot and Tcold
 !
@@ -449,7 +444,6 @@ program Ionboost
         tsR0=time/rgauss
         RsR0=Rs/rgauss
         Eq42=2.d0*xi*exp(xi**2/2.d0)/rgauss/sqrt(RsR0)
-        write(14,'(f8.2,f7.3,f7.4,f8.3,f8.4,f7.4)') time,tsR0,xi,RsR0,Eq42
 102    continue
 !*         2.6 test d'arret sur le temps (ici s'arrete normalement
 !*          un calcul standard avec itmax.gt.1 et tmax.gt.0 apres

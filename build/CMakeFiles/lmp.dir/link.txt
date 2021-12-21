@@ -1,0 +1,1 @@
+/usr/local/bin/gfortran  -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk CMakeFiles/lmp.dir/types.f90.o CMakeFiles/lmp.dir/share.f90.o CMakeFiles/lmp.dir/solver.f90.o CMakeFiles/lmp.dir/param.f90.o CMakeFiles/lmp.dir/IonBoost28.f90.o -o lmp 
