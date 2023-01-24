@@ -1,30 +1,53 @@
 module mod_solver
-    use mod_types
     implicit none
     private
     public :: gauss
     contains
-      pure subroutine gauss(nmax,ncell,A,B,C,F,bx,fx,phi)
-        ! determine the electrostatic potential
-        !
-        real(dp), intent(in out) :: phi(0:nmax)
-        real(dp), intent(in) :: A(1:nmax), C(0:nmax-1)
-        real(dp), intent(in) :: B(0:nmax), F(0:nmax)
-        real(dp), intent(in out) :: bx(0:nmax)
-        real(dp), intent(in out) :: fx(0:nmax)
-        integer(sp), intent(in) :: nmax
-        integer(sp), intent(in) :: ncell
-        integer(sp) :: j
-        !
-        Bx(0) = B(0)
-        Fx(0) = F(0)
-        do concurrent(j = 1:ncell)
-            Bx(j) = B(j) - A(j)*C(j-1) /Bx(j-1)
-            Fx(j) = F(j) - A(j)*Fx(j-1)/Bx(j-1)
+      subroutine gauss(nmax,ncell,A,B,C,F,bx,fx,phi)
+        ! Determine the electrostatic potential
+        implicit none
+        integer, intent(in) :: nmax, ncell
+        real, intent(in) :: A(1:nmax), B(0:nmax), C(0:nmax-1), F(0:nmax)
+        real, intent(inout) :: bx(0:nmax), fx(0:nmax), phi(0:nmax)
+        integer :: j
+
+        ! Initialize Bx and Fx
+        bx(0) = B(0)
+        fx(0) = F(0)
+        
+        ! Error handling
+        if (bx(0) == 0) then
+            print *, "Error: Division by zero in Bx(0)"
+            stop
+        end if
+
+        ! Forward loop
+        do j = 1,ncell
+            bx(j) = B(j) - A(j)*C(j-1) /bx(j-1)
+            fx(j) = F(j) - A(j)*fx(j-1)/bx(j-1)
+            ! Error handling
+            if (bx(j) == 0) then
+                print *, "Error: Division by zero in Bx(" ,j,")"
+                stop
+            end if
         end do
-            phi(ncell) = Fx(ncell)/Bx(ncell)
-        do concurrent(j=ncell-1:0:-1)
-            phi(j) = ( Fx(j)-C(j)*phi(j+1) )/Bx(j)
+        
+        phi(ncell) = fx(ncell)/bx(ncell)
+        
+        ! Error handling
+        if (bx(ncell) == 0) then
+            print *, "Error: Division by zero in Bx(" ,ncell,")"
+            stop
+        end if
+        ! Backward loop
+        do j = ncell-1, 0, -1
+            phi(j) = (fx(j) - C(j)*phi(j+1)) / bx(j)
+             ! Error handling
+            if (bx(j) == 0) then
+                print *, "Error: Division by zero in Bx(" ,j,")"
+                stop
+            end if
         end do
       end subroutine gauss
 end module mod_solver
+

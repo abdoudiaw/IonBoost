@@ -1,6 +1,0 @@
-# The fortran modules provided by this target.
-provides
- mod_io.mod
- mod_share.mod
- mod_solver.mod
- mod_types.mod

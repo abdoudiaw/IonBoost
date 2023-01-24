@@ -1,6 +1,5 @@
-# Ionboost!
-This code solves the Euler equations for a plasma expansion into a vacuum.
-
+# Mora
+This code solves the Euler equations coupled with Poisson equation for electric sheath.
 
 1 - To compile the code with Cmake, do:
     mkidr build
