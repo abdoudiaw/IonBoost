@@ -1,9 +1,9 @@
-2450 400 0.996   ! ncell nvacuum prog
-10000 50.        ! itmax  tmax
+5000 400 0.996   ! ncell nvacuum prog
+10000 100        ! itmax  tmax
 20 10 5 5        ! iter0 iter1 iter2 iter3
-0.2              ! dti
+0.2            ! dti
 0.0  1.0         ! n0cold n0hot
 1.0  0.01        ! Thmax  Tcmax
-F    20.0        ! lfini lmax
+T    936.        ! lfini lmax
 T  T             ! nb_cons En_cons
 1.0   4.88 20.0  ! T_MeV LSS nLSS
