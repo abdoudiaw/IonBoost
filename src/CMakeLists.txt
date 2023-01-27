@@ -12,7 +12,7 @@ add_executable(lmp types.f90
                         share.f90
                         solver.f90
                         param.f90
-                        IonBoost28.f90)
+                        main.f90)
 
 target_include_directories(lmp PUBLIC
                            "${PROJECT_BINARY_DIR}"

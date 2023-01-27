@@ -1,5 +1,7 @@
 module mod_types
-    use, intrinsic :: iso_fortran_env, only: rp => real32, &
-                                             dp => real64, &
-                                             sp => int32
+    implicit none
+    private
+    public :: rp, dp
+    integer, parameter :: rp = selected_real_kind(p=24)
+    integer, parameter :: dp = selected_real_kind(p=53)
 end module mod_types
