@@ -8,7 +8,7 @@
       Nbe=76
       prog=0.d0
 	itmax=20000
-	tmax=1000.
+	tmax=100.
 	iter0=12
 	iter1=6
 	fiter2=0.000d0
@@ -19,7 +19,7 @@
 	Thmax=1.0d0
 	Tcmax=0.001d0
 	lfini=.true. 
-	lmax=500.d0
+	lmax=40.d0
 	nb_cons=.true.
 	En_cons=.true.
 	EOS=.false.
