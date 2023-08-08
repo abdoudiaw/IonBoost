@@ -30,16 +30,16 @@ integer  :: ncell, nvacuum,Nbe, itmax, jcoldmax, &
             ntotal, nsort, iline, nstep, iline_vide, itime,ivmax, &
             idebut(0:nmax),irang(0:nmax),itest(0:nmax),m,djout, &
             i, j, idico, iter, iphi, iidebut
-real(dp), dimension(0:nmax) :: x0, xt, xtold, v, vint, E, Eold, &
+real(8), dimension(0:nmax) :: x0, xt, xtold, v, vint, E, Eold, &
                                phi, ni, nilisse, nelisse, phiold, &
                                ne, rho, nhot,ncold, nhotold, ncoldold, &
                                gradnh, gradnc, ghold, gcold, phot, &
                                pcold, pe, nss, difth, dWhot, SWhot, &
                                niSS, qiSS, charge,b, f, bx, fx, &
                                vtest, vtestint, Etest, Etestold, x0test, xttest, xttestold
-real(dp), dimension(1:nmax) :: vmoy, Emoy, dndv, dndE, dx0, dxt, dxtold, ni1s2, E1s2, a
-real(dp), dimension(0:nmax-1) :: c
-real(dp) :: length,ni0,n0cold,n0hot,neh,nec,neold,kvide, &
+real(8), dimension(1:nmax) :: vmoy, Emoy, dndv, dndE, dx0, dxt, dxtold, ni1s2, E1s2, a
+real(8), dimension(0:nmax-1) :: c
+real(8) :: length,ni0,n0cold,n0hot,neh,nec,neold,kvide, &
             nti,nthot,ntcold,nte,lmax, &
             nthot0nhm3,nhm2,nhm1,LSS,nu,nnhot,nncold, nhm3, Tcm3, Thm3, &
             lDebye,lgrade,lgradi,lay1,lay2,mix,mixp, &

@@ -19,7 +19,7 @@ program Mora
     endif
     !
     phi(ncell) =  n0hot * Th / n0hot
-    E(ncell) = n0hot * Th * exp(-phi(ncell) / Th)))
+    E(ncell) = n0hot * Th * exp(-phi(ncell) / Th)
     alpha = E(ncell) / phi(ncell)
     !
     do i = ncell + 1, ntotal
@@ -129,8 +129,8 @@ program Mora
     do iphi = 1, iter
 ! 2.2.1 - Construction of arrays a, b, c, and f
         neh = n0hot * exp(-phi(0) / Th)
-        b(0) = -2 / dxt(1)^2 - neh / Th
-        c(0) = 2 / dxt(1)^2
+        b(0) = -2 / (dxt(1) * dxt(1)) - neh / Th
+        c(0) = 2 / (dxt(1) * dxt(1))
         f(0) = ni(0) - neh * (1 + phi(0) / Th)
     !
     do i = 1, ncell-1
@@ -143,7 +143,7 @@ program Mora
     neh = n0hot * exp(-phi(ncell) / Th)
     neold = neh
     peold = neh * Th
-    a(ncell) = 2 / dxt(ncell)^2
+    a(ncell) = 2 / (dxt(ncell) * dxt(ncell))
     b(ncell) = -a(ncell) - sqrt(2 / peold) * neold / dxt(ncell) - neh / Th
     f(ncell) = ni(ncell) - neh * (1 + phi(ncell) / Th) - sqrt(8 * peold) / dxt(ncell) * (1 + 0.5 * neold * phi(ncell) / peold)
 ! 2.2.2 - Inversion of the tridiagonal matrix
@@ -257,13 +257,13 @@ program Mora
             E1s2(i)=(phi(i)-phi(i-1))/dxt(i)
         end do
         do i = 1,ncell-1
-            E(i)=(dxt(i+1)E1s2(i)+dxt(i)E1s2(i+1))/(dxt(i)+dxt(i+1))
+            E(i)=(dxt(i+1)*E1s2(i)+dxt(i)*E1s2(i+1))/(dxt(i)+dxt(i+1))
         end do
-        E(ncell)=sqrt(2.d0pe(ncell))
+        E(ncell)=sqrt(2.0*pe(ncell))
         ! 2.2.12 adjust velocity at 'whole' times
         if(itime.gt.1) then
             do i = 1,ncell
-                v(i)=vint(i)+dt*(3.d0*E(i)+Eold(i))charge(i)/8.d0
+                v(i)=vint(i)+dt*(3.0*E(i)+Eold(i))charge(i)/8.
             end do
         endif
         ! 2.2.13 calculate kinetic energy of ions
@@ -339,7 +339,7 @@ program Mora
         En_elec+En_ion-Whot,vmax,vfinal
         !
         write(10,'(f8.2,f12.5,f7.4,f8.4,f7.5,2(f10.7),2(f8.6),3(f10.5),i6,i6)') time, &
-        xt(ivmax),v(ivmax),0.5d0v(ivmax)**2,E(ivmax),ne(ivmax),ni(ivmax),&
+        xt(ivmax),v(ivmax),0.5*v(ivmax)**2,E(ivmax),ne(ivmax),ni(ivmax),&
         ni(0),nhot(0),lDebye,lgrad_e_pressure,lgrad_i_pressure,ivmax,idebut(ivmax)
         !* 2.6 End of the time loop
         101 continue
@@ -349,7 +349,7 @@ program Mora
         Whot1,Whot2,Whot,Th,En_elec,&
         En_elec+En_ion-Whot,vmax,vfinal
         write(10,'(f8.2,f12.5,f7.4,f8.4,f7.5,2(f10.7),2(f8.6),3(f10.5),i6,i6)') time, &
-        xt(ivmax),v(ivmax),0.5d0v(ivmax)**2,E(ivmax),ne(ivmax),ni(ivmax),&
+        xt(ivmax),v(ivmax),0.5*v(ivmax)**2,E(ivmax),ne(ivmax),ni(ivmax),&
         ni(0),nhot(0),lDebye,lgrad_e_pressure,lgrad_i_pressure,ivmax,idebut(ivmax)
         Rs=rgauss/ni(0)
         xi=(xt(ivmax)+lmax)/Rs
