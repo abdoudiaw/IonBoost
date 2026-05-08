@@ -1,0 +1,9 @@
+.DS_Store
+build/
+*.o
+*.mod
+conservation.txt
+historique.txt
+profil.txt
+spectres.txt
+.ipynb_checkpoints/

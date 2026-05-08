@@ -35,14 +35,14 @@ module mod_io
             write(*, *) 'lfini=.false. therefore En_cons=.false. and nb_cons=.false.'
             endif
             !
-            if ((.not.nb_cons) .and. En_cons) then
-            nb_cons = .true.
-            write(*, *) 'En_cons=.true. therefore nb_cons=.true.'
+            if (En_cons) then
+            En_cons = .false.
+            write(*, *) 'single-species mode: En_cons=.false.'
             endif
             !
-            if (nb_cons .and. (n0hot < 1.e-04)) then
+            if (nb_cons) then
             nb_cons = .false.
-            write(*, *) 'n0hot < 1.e-04 therefore nb_cons=.false.'
+            write(*, *) 'single-species mode: nb_cons=.false.'
             endif
             !
             ntotal = ncell + nvacuum
@@ -90,15 +90,12 @@ module mod_io
             end do
             do i = 2, ncell
                 if (i == 2) then
-                    dx0(2) = (1. - prog) * dx0(1)
+                    dx0(2) = (1.d0 + prog) * dx0(1) * niSS(0) / niSS(1) - dx0(1)
                 else
-                    dx0(i) = dx0(i - 1) * prog
+                    dx0(i) = (dx0(i - 2) + dx0(i - 1)) * prog * niSS(i - 2) / niSS(i - 1) - dx0(i - 1)
                 endif
-            !
                 x0(i) = x0(i - 1) + dx0(i)
+                niSS(i) = ni0
             end do
     end subroutine read_input
 end module mod_io
-
-
-

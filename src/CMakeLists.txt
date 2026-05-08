@@ -1,19 +1,18 @@
-# CMake project file for Ionboost
-
 cmake_minimum_required(VERSION 3.10)
+project(Mora LANGUAGES Fortran)
 
-# set the project name and version
-project(Ionboost VERSION 28.0)
+add_executable(mora
+    types.f90
+    share.f90
+    solver.f90
+    param.f90
+    main.f90
+)
 
-ENABLE_LANGUAGE( Fortran )
+set_target_properties(mora PROPERTIES
+    Fortran_MODULE_DIRECTORY "${PROJECT_BINARY_DIR}/modules"
+)
 
-
-add_executable(lmp types.f90
-                        share.f90
-                        solver.f90
-                        param.f90
-                        main.f90)
-
-target_include_directories(lmp PUBLIC
-                           "${PROJECT_BINARY_DIR}"
-                           )
+target_include_directories(mora PUBLIC
+    "${PROJECT_BINARY_DIR}/modules"
+)

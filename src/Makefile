@@ -1,20 +1,18 @@
 FC = gfortran
-# flags
-DBG := -O0 -g -fbacktrace -Wall -Wextra #-pedantic -fcheck=all -finit-real=snan -ffpe-trap=invalid -std=f2018
+DBG := -O0 -g -fbacktrace -Wall -Wextra
 FFLAGS := $(DBG)
-#
 OBJS = types.o share.o solver.o param.o
-#
+
 .PHONY: all clean
 .SUFFIXES: .f90 .o
 
-all: Mora
+all: mora
 
-Mora: main.f90 $(OBJS)
-	$(FC) $(FCFLAGS) $< $(OBJS) -o $@
+mora: main.f90 $(OBJS)
+	$(FC) $(FFLAGS) $< $(OBJS) -o $@
 
 .f90.o:
-	$(FC) -c $(FCFLAGS) $<
+	$(FC) -c $(FFLAGS) $<
 
 %.o: %.mod
 

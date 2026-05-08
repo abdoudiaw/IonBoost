@@ -7,8 +7,8 @@ module mod_solver
         ! Determine the electrostatic potential
         implicit none
         integer, intent(in) :: nmax, ncell
-        real, intent(in) :: A(1:nmax), B(0:nmax), C(0:nmax-1), F(0:nmax)
-        real, intent(inout) :: bx(0:nmax), fx(0:nmax), phi(0:nmax)
+        real(8), intent(in) :: A(1:nmax), B(0:nmax), C(0:nmax-1), F(0:nmax)
+        real(8), intent(inout) :: bx(0:nmax), fx(0:nmax), phi(0:nmax)
         integer :: j
 
         ! Initialize Bx and Fx
