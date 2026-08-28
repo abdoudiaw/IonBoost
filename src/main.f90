@@ -41,9 +41,17 @@ program IonBoost
 
     call read_config(cfg, 'input.in')
     call build_grid(grid, cfg)
-    call init_ions(ions, grid, ni0=cfg%n0hot, Zion=1.0_dp, prog=cfg%prog)
-    allocate(els(1))
-    els(1) = electron_species_t(n0=cfg%n0hot, T=cfg%Thmax)
+    call init_ions(ions, grid, ni0=cfg%ni0, Zion=1.0_dp, prog=cfg%prog)
+    if (cfg%n0cold > 0.0_dp) then
+        allocate(els(2))
+        els(1) = electron_species_t(n0=cfg%n0hot, T=cfg%Thmax)
+        els(2) = electron_species_t(n0=cfg%n0cold, T=cfg%Tcmax)
+        write(*, '(a,f8.3,a,f10.4)') 'bi-Maxwellian electrons: Th/Tc =', &
+            cfg%Thmax / cfg%Tcmax, ',  nh/nc =', cfg%n0hot / cfg%n0cold
+    else
+        allocate(els(1))
+        els(1) = electron_species_t(n0=cfg%n0hot, T=cfg%Thmax)
+    end if
     call init_fields(flds, grid, els)
     call open_histories(diag)
 
@@ -108,7 +116,7 @@ program IonBoost
 
         dtold = dt
         dt = cfg%dti
-        if (cfg%vtt) dt = cfg%dti / sqrt(max(ions%dens(0) / cfg%n0hot, 1.0e-12_dp))
+        if (cfg%vtt) dt = cfg%dti / sqrt(max(ions%dens(0) / cfg%ni0, 1.0e-12_dp))
         if ((time + dt) > (cfg%tmax - 1.0e-5_dp)) then
             dt = cfg%tmax - time
             laststep = .true.

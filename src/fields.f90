@@ -159,18 +159,21 @@ contains
 
     ! Continue phi beyond the ion front with the exact Boltzmann vacuum-sheath
     ! solution phi = phi_f + 2 T ln(1 + k x), k = sqrt(n0 e^{-phi_f/T} / 2T).
-    ! Single electron population only (closed form); the grid spacing follows
-    ! the local Debye length.
+    ! The closed form is single-population; with several populations the
+    ! hottest one is used, which is exact in the limit where the colder
+    ! densities are negligible beyond the front (phi_front >> T_cold).
+    ! The grid spacing follows the local Debye length.
     subroutine extend_sheath(flds, grid, els)
         type(fields_t), intent(inout) :: flds
         type(grid_t), intent(inout) :: grid
         type(electron_species_t), intent(in) :: els(:)
-        integer :: i, n
+        integer :: i, n, ih
         real(dp) :: kvide, uphi, Th
 
         n = grid%ncell
-        Th = els(1)%T
-        kvide = sqrt(els(1)%n0 / 2.0_dp / Th)
+        ih = maxloc(els%T, dim=1)
+        Th = els(ih)%T
+        kvide = sqrt(els(ih)%n0 / 2.0_dp / Th)
         uphi = 0.0_dp
         do i = n + 1, grid%ntotal
             if (i == n + 1) then

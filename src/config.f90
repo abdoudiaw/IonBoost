@@ -22,6 +22,9 @@ module mod_config
         ! plasma
         real(dp) :: n0hot        ! hot-electron reference density
         real(dp) :: Thmax        ! hot-electron temperature
+        real(dp) :: n0cold = 0.0_dp  ! cold-electron reference density (0 = single species)
+        real(dp) :: Tcmax = 0.0_dp   ! cold-electron temperature
+        real(dp) :: ni0          ! unperturbed ion density (= total electron density)
         real(dp) :: nu = 0.0_dp  ! ion viscosity (0 = off)
         ! legacy input fields, read for file-format compatibility but unused:
         ! iter2/iter3 belonged to the energy-conserving Th iteration, T_MeV/LSS/
@@ -55,7 +58,28 @@ contains
         read(iunit, *) cfg%lfini, cfg%lmax
         read(iunit, *) cfg%nb_cons, cfg%En_cons
         read(iunit, *) cfg%T_MeV, cfg%LSS, cfg%nLSS
+        ! optional 10th line: cold electron population "n0cold Tcmax"
+        ! (bi-Maxwellian expansion; absent = single species)
+        cfg%n0cold = 0.0_dp
+        cfg%Tcmax = 0.0_dp
+        read(iunit, *, iostat=ierr) cfg%n0cold, cfg%Tcmax
+        if (ierr /= 0) then
+            cfg%n0cold = 0.0_dp
+            cfg%Tcmax = 0.0_dp
+        end if
         close(iunit)
+
+        if (cfg%n0cold > 0.0_dp .and. cfg%Tcmax <= 0.0_dp) then
+            write(*, *) 'n0cold > 0 requires Tcmax > 0.'
+            stop 1
+        end if
+        cfg%ni0 = cfg%n0hot + cfg%n0cold
+
+        ! plasma-oscillation stability of the leapfrog: omega_p * dt <= 2
+        if (sqrt(cfg%ni0) * cfg%dti > 2.0_dp) then
+            cfg%dti = 2.0_dp / sqrt(cfg%ni0)
+            write(*, *) 'dti reduced for stability: dti =', cfg%dti
+        end if
 
         if (cfg%Thmax <= 0.0_dp) then
             write(*, *) 'Hot temperature must be positive.'

@@ -115,6 +115,11 @@ nb_cons En_cons
 T_MeV LSS nLSS
 ```
 
+An optional 10th line `n0cold Tcmax` declares a second, cold Boltzmann
+electron population (bi-Maxwellian expansion). With `Th/Tc > 5 + sqrt(24)` a
+rarefaction shock forms; `scripts/rarefaction_shock.ipynb` reproduces
+A. Diaw and P. Mora, PRE **84**, 036402 (2011) with this option.
+
 See `tests/input.in` for an example. Note that the foil behaves as
 semi-infinite (the regime of the 2003 paper) only while `tmax < lmax` in code
 units; beyond that the run enters the thin-foil regime.
