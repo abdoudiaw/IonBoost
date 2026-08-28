@@ -6,9 +6,9 @@ OBJS = types.o share.o solver.o param.o
 .PHONY: all clean
 .SUFFIXES: .f90 .o
 
-all: mora
+all: ionboost
 
-mora: main.f90 $(OBJS)
+ionboost: main.f90 $(OBJS)
 	$(FC) $(FFLAGS) $< $(OBJS) -o $@
 
 .f90.o:
@@ -17,4 +17,4 @@ mora: main.f90 $(OBJS)
 %.o: %.mod
 
 clean:
-	$(RM) mora *.o *.mod
+	$(RM) ionboost *.o *.mod

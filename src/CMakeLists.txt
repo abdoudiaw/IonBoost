@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
-project(Mora LANGUAGES Fortran)
+project(IonBoost LANGUAGES Fortran)
 
-add_executable(mora
+add_executable(ionboost
     types.f90
     share.f90
     solver.f90
@@ -9,10 +9,10 @@ add_executable(mora
     main.f90
 )
 
-set_target_properties(mora PROPERTIES
+set_target_properties(ionboost PROPERTIES
     Fortran_MODULE_DIRECTORY "${PROJECT_BINARY_DIR}/modules"
 )
 
-target_include_directories(mora PUBLIC
+target_include_directories(ionboost PUBLIC
     "${PROJECT_BINARY_DIR}/modules"
 )

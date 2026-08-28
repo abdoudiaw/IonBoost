@@ -1,4 +1,4 @@
-program Mora
+program IonBoost
     use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
     use mod_share
     use mod_io, only: read_input
@@ -63,7 +63,7 @@ program Mora
     end if
 
     phi(ncell) = Th
-    E(ncell) = sqrt(2.d0 * Th * exp(-phi(ncell) / Th))
+    E(ncell) = sqrt(2.d0 * n0hot * Th * exp(-phi(ncell) / Th))
     alpha = E(ncell) / phi(ncell)
 
     do i = 0, ncell
@@ -96,8 +96,8 @@ program Mora
 
     open(unit = 9, file = 'conservation.txt', status = 'unknown')
     open(unit = 10, file = 'historique.txt', status = 'unknown')
-    write(9, '(a)') '# time nti nthot nte n0hot En_ion Whot1 Whot2 Whot Th En_elec vmax vfinal'
-    write(10, '(a)') '# time xi v(ivmax) Energy_max E(ivmax) ne(ivmax) ni(ivmax) ni(0) nhot(0) lDebye lgrad_e_pressure lgrad_i_pressure ivmax idebut(ivmax)'
+    write(9, '(a)') '# time nti nthot nte n0hot En_ion Whot1 Whot2 Whot Th En_elec En_balance vmax vfinal'
+    write(10, '(a)') '# time xt(ivmax) v(ivmax) Energy_max E(ivmax) ne(ivmax) ni(ivmax) ni(0) nhot(0) lDebye lgrad_e_pressure lgrad_i_pressure ivmax idebut(ivmax)'
 
     do itime = 1, itmax
         if (itime <= 3) then
@@ -217,7 +217,10 @@ program Mora
                     dxt(i) = 0.025d0 * sqrt(Th / max(nhot(i - 1), 1.d-12))
                 end if
                 xt(i) = xt(i - 1) + dxt(i)
-                uphi = uphi + kvide * sqrt(1.d0 + pe(i - 1) / max(phot(i - 1), 1.d-12)) * dxt(i)
+                ! Boltzmann electrons: pe*exp(phi/Th) = n0hot*Th is constant, so the
+                ! exact sheath solution phi = phi(ncell) + 2*Th*log(1 + kvide*x*exp(-phi(ncell)/(2*Th)))
+                ! needs uphi = kvide*x with kvide = sqrt(n0hot/(2*Th))
+                uphi = uphi + kvide * dxt(i)
                 phi(i) = phi(ncell) + 2.d0 * Th * log(1.d0 + uphi * exp(-0.5d0 * phi(ncell) / Th))
                 nhot(i) = n0hot * exp(-phi(i) / Th)
                 ne(i) = nhot(i)
@@ -352,11 +355,11 @@ program Mora
         end do
         vfinal = v(ivmax) + E(ivmax) * charge(ivmax) * time
         lDebye = sqrt(Th / max(ne(ncell), 1.d-12))
-        lgrade = -1.d0 / max(grade, 1.d-12)
+        lgrade = -1.d0 / sign(max(abs(grade), 1.d-12), grade)
         if (itime == 1) then
             lgradi = 0.d0
         else
-            lgradi = -1.d0 / max(gradi, 1.d-12)
+            lgradi = -1.d0 / sign(max(abs(gradi), 1.d-12), gradi)
         end if
 
         nstep = int(tmax / max(dt, 1.d-12))
@@ -380,7 +383,7 @@ program Mora
 
         dtold = dt
         dt = dti
-        if (VTT) dt = dti / sqrt(max(ni(0), 1.d-12))
+        if (VTT) dt = dti / sqrt(max(ni(0) / ni0, 1.d-12))
         if ((time + dt) > (tmax - 1.d-5)) then
             dt = tmax - time
             laststep = .true.
@@ -544,4 +547,4 @@ contains
             phi_local(j_local) = (fx_local(j_local) - c_local(j_local) * phi_local(j_local + 1)) / bx_local(j_local)
         end do
     end subroutine gauss_solve
-end program Mora
+end program IonBoost

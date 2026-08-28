@@ -1,46 +1,58 @@
-# Mora
+# IonBoost
 
-`Mora` is a small Fortran solver for 1D electrostatic plasma expansion into vacuum. This repository appears to reproduce or adapt the model introduced in:
+`IonBoost` is a 1D Lagrangian solver for collisionless plasma expansion into a
+vacuum with Boltzmann electrons — the mechanism behind TNSA-type ion
+acceleration from short-pulse laser–solid interaction. It reproduces the model
+and results of:
 
-P. Mora, *Plasma Expansion into a Vacuum*, **Physical Review Letters** 90, 185002 (published May 7, 2003). DOI: [10.1103/PhysRevLett.90.185002](https://doi.org/10.1103/PhysRevLett.90.185002).
+P. Mora, *Plasma Expansion into a Vacuum*, **Physical Review Letters** 90,
+185002 (2003). DOI:
+[10.1103/PhysRevLett.90.185002](https://doi.org/10.1103/PhysRevLett.90.185002).
 
-Note: the DOI above is a **PRL** paper, not PRE.
+The name comes from `IonBoost`, the original code written by Patrick Mora on
+which this solver is based.
 
 ## Model
 
-The current implementation advances a 1D ion expansion problem coupled to an electrostatic field. In normalized form, the code structure corresponds to:
+The code advances cold Lagrangian ion sheets coupled to an electrostatic field,
+with electrons in isothermal Boltzmann equilibrium. In normalized units
+(lengths in the initial Debye length, times in the inverse ion plasma
+frequency, velocities in the ion-acoustic speed):
 
 ```text
 ∂t ni + ∂x(ni ui) = 0
 ∂t ui + ui ∂x ui = Zi E
 ∂x E = ni - ne
-E = -∂x φ
-```
-
-with a Boltzmann-like hot-electron closure used in the present source:
-
-```text
 ne = n0hot exp(-φ / Th)
 ```
 
-The vacuum-side sheath is then extended beyond the ion front using the same electrostatic / Boltzmann closure used in the solver.
+Beyond the ion front the field is continued analytically with the exact
+Boltzmann vacuum-sheath solution.
 
 ## Numerical method
 
-From the current source layout:
+- ion sheets are advanced with a variable-step leapfrog scheme on an ordered
+  1D mesh; the ion density is rebuilt from the sheet spacing
+- the Poisson–Boltzmann equation for φ is solved by Newton iteration with a
+  tridiagonal solve; the boundary condition at the ion front is the linearized
+  `E = sqrt(2 pe)` relation (Eq. 8 of the paper)
+- the vacuum sheath beyond the front uses the exact solution
+  `φ = φ_f + 2 Th ln(1 + k x)` with `k = sqrt(n0 e^{-φ_f/Th} / 2 Th)`
 
-- ion positions and velocities are advanced in time on a 1D ordered mesh / sheet representation
-- ion density is rebuilt from the updated cell spacing
-- the electrostatic potential is obtained from a tridiagonal linear solve
-- the tridiagonal system is inverted by `gauss()` in `src/solver.f90`
-- the solver iterates on `φ`, and optionally on `n0hot` and `Th`, to enforce electron-number and energy constraints
+## Validation
+
+At `ωpi t = 50` (default notebook run) the solver matches the paper at the ~1%
+level: the front field follows Eq. (9), the front velocity Eq. (10), the front
+position `x/cs t = 5.59`, the front asymptotics Eqs. (14)/(17)/(18)/(20), and
+the energy spectrum Eq. (21) with the Eq. (22) cutoff.
 
 ## Repository layout
 
 - `src/`: Fortran sources and build files
+- `sheath/`: sheath1d, a kinetic-ion Boltzmann-electron sheath solver
 - `tests/input.in`: sample runtime input file
-- `test_ding_2015.py`: small parameter-check script
-- `scripts/viz/`: generated figures
+- `scripts/ionboost_plots.ipynb`: end-to-end notebook (build, run, and compare
+  against the paper); figures are written to `scripts/viz/`
 - `tools/`: notebooks for analysis / plotting
 
 ## Build
@@ -52,28 +64,28 @@ cmake -S src -B build
 cmake --build build
 ```
 
-This is intended to produce the executable `mora` in `build/`.
+This produces the executable `ionboost` in `build/`.
 
 ## Run
 
-The program reads `input.in` from the current working directory. One simple way to run the sample case is:
+The program reads `input.in` from the current working directory:
 
 ```bash
 cp tests/input.in build/input.in
 cd build
-./mora
+./ionboost
 ```
 
-Expected output files include:
+Output files (CSV with a `#` header line):
 
-- `conservation.txt`
-- `historique.txt`
-- `profil.txt`
-- `spectres.txt`
+- `conservation.txt`: time histories of particle numbers and energies
+- `historique.txt`: time histories of front quantities
+- `profil.txt`: final spatial profiles
+- `spectres.txt`: final ion velocity and energy spectra
 
 ## Input file
 
-The current `read_input()` implementation expects `input.in` in this order:
+`read_input()` expects `input.in` in this order:
 
 ```text
 ncell nvacuum prog
@@ -87,14 +99,6 @@ nb_cons En_cons
 T_MeV LSS nLSS
 ```
 
-See `tests/input.in` for an example.
-
-## Current status
-
-The repository has been cleaned up so the documentation, ignore rules, and sample input are more consistent. The current code path is now treated as a simplified single-species Mora solver with fixed hot-electron temperature, machine-readable outputs, and an integrated plotting notebook.
-
-## Suggested wording
-
-If you want a short repository description, this is the cleanest version:
-
-> This code reproduces or adapts the 1D plasma-expansion model introduced in P. Mora, *Plasma Expansion into a Vacuum*, Phys. Rev. Lett. 90, 185002 (2003), DOI: 10.1103/PhysRevLett.90.185002.
+See `tests/input.in` for an example. Note that the foil behaves as
+semi-infinite (the regime of the 2003 paper) only while `tmax < lmax` in code
+units; beyond that the run enters the thin-foil regime.
