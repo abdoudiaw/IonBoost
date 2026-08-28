@@ -1,7 +1,6 @@
 module mod_types
     implicit none
     private
-    public :: rp, dp
-    integer, parameter :: rp = selected_real_kind(p=24)
-    integer, parameter :: dp = selected_real_kind(p=53)
+    public :: dp
+    integer, parameter :: dp = selected_real_kind(15, 307)   ! IEEE double
 end module mod_types

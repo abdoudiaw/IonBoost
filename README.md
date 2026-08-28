@@ -46,6 +46,22 @@ level: the front field follows Eq. (9), the front velocity Eq. (10), the front
 position `x/cs t = 5.59`, the front asymptotics Eqs. (14)/(17)/(18)/(20), and
 the energy spectrum Eq. (21) with the Eq. (22) cutoff.
 
+## Code structure
+
+The driver (`src/main.f90`) owns only the time loop; the physics lives in
+single-purpose modules designed around the extension points:
+
+| Module | Role | Extension seam |
+|---|---|---|
+| `config.f90` | input parameters | — |
+| `grid.f90` | Lagrangian node grid | replace for multi-D |
+| `ions.f90` | ion species (sheets, density, kinetic energy) | instantiate more species |
+| `electrons.f90` | Boltzmann electron closure | append populations (e.g. cold electrons) |
+| `fields.f90` | Poisson–Boltzmann Newton solve, sheath, energies | assembly separated from linear solve |
+| `linear_solver.f90` | abstract solver + Thomas tridiagonal | drop-in GPU/3D backend (e.g. AmgX) |
+| `pusher.f90` | leapfrog sheet dynamics, sheet ordering | — |
+| `diagnostics.f90` | output files | — |
+
 ## Repository layout
 
 - `src/`: Fortran sources and build files

@@ -3,9 +3,14 @@ project(IonBoost LANGUAGES Fortran)
 
 add_executable(ionboost
     types.f90
-    share.f90
-    solver.f90
-    param.f90
+    config.f90
+    linear_solver.f90
+    electrons.f90
+    grid.f90
+    ions.f90
+    fields.f90
+    pusher.f90
+    diagnostics.f90
     main.f90
 )
 
